@@ -2,6 +2,7 @@ import requests
 import asyncio
 import concurrent.futures
 import time
+import json
 
 
 class film:
@@ -58,6 +59,11 @@ async def get_all_playable_links(stream_list):
         return playable_link_list
 
 
+def if_available(item, key):
+    if key in item:
+        return item[key]
+
+
 if __name__ == '__main__':
     t1 = time.time()
     films_list = []
@@ -70,49 +76,31 @@ if __name__ == '__main__':
         print(f'Requesting page #{page_number}')
         for item in pages_list[page_number]['_embedded']['viaplay:blocks'][0]['_embedded']['viaplay:products']:
             if item['type'] == 'movie':
+                title = if_available(item['content'], 'title') or None
+                description = if_available(item['content'], 'synopsis') or None
+                production_country = if_available(item['content']['production'], 'country') or None
+                year = if_available(item['content']['production'], 'year') or None
+                director = if_available(item['content']['people'], 'directors') or None
+                poster = if_available(item['content']['images']['boxart'], 'url') or None
 
-                if ('title' in item['content']):
-                    title = item['content']['title'] or 'N/A'
-                else:
-                    title = None
-
-                if ('synopsis' in item['content']):
-                    description = item['content']['synopsis']
-                else:
-                    description = None
-                if ('language' in item['content']):
-                    audio_languages = item['content']['language']['audio']
-                else:
-                    audio_languages = None
-
-                if ('country' in item['content']['production']):
-                    production_country = item['content']['production']['country']
-                else:
-                    production_country = None
-                if ('year' in item['content']['production']):
-                    year = item['content']['production']['year']
-                else:
-                    year = None
-                if ('directors' in item['content']['people']):
-                    director = item['content']['people']['directors']
-                else:
-                    director = None
-                if ('imdb' in item['content']):
+                if ('imdb' in item['content']):     # Not all movies has IMDB rating so we need to check if it exists before getting the id
                     imdb_id = item['content']['imdb']['id']
                 else:
                     imdb_id = None
 
-                if ('url' in item['content']['images']['boxart']):
-                    poster = item['content']['images']['boxart']['url']
+                if ('language' in item['content']): # Same as the IMDB id but with audio languages
+                    audio_languages = item['content']['language']['audio']
                 else:
-                    poster = None
+                    audio_languages = None
 
                 stream_list.append(item['_links']['self']['href'])
                 films_list.append(
                     film(title, description, audio_languages, production_country, year, director, poster, imdb_id))
+
     playable_link_list = loop.run_until_complete(get_all_playable_links(stream_list))
     for index, item in enumerate(films_list):
         item.update_playable_link(playable_link_list[index])
     t2 = time.time()
     print(f'Elapsed time {t2-t1} seconds')
-    boll = 0
+
+
