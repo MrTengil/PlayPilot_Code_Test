@@ -2,7 +2,7 @@ Hello Jackson,
 
 I hope all is well with you.
 
-I have attached a GitHub link to my proposed solution to the provided problem here:
+I have attached a GitHub link to my proposed solution to the provided problem here: https://github.com/MrTengil/PlayPilot_Code_Test.git
 The solution is provided in get_viaplay_films.py. Test this by running main.py which runs get_viaplay_films.fetch() and writes the result into a file.
 It was quite fun to figure it out! However, I have some thoughts regarding the problem I'd like to discuss further.
 
